@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра: Определения</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { margin: 20px; }
+        .word-container { display: flex; flex-direction: column; align-items: center; }
+        .word, .definition { padding: 10px; margin: 5px; background: lightblue; cursor: grab; border-radius: 5px; display: inline-block; }
+        .dropzone { min-height: 40px; padding: 10px; border: 2px dashed #333; margin: 10px; width: 80%; }
+        #nextButton { display: none; margin-top: 20px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Соотнесите термины с их определениями:</h2>
+    <div class="container">
+        <div class="word-container" id="words"></div>
+        <div id="definitions"></div>
+        <button id="checkButton" onclick="checkAnswers()">Проверить</button>
+        <button id="nextButton" onclick="nextStep()">Продолжить</button>
+        <p id="result"></p>
+    </div>
+    
+    <script>
+        const terms = [
+            { term: "Рецептурные лекарства", definition: "Лекарства, которые можно приобрести только при наличии рецепта от врача." },
+            { term: "Безрецептурные лекарства", definition: "Лекарства, которые можно приобрести без визита к врачу и без рецепта." },
+            { term: "Антибиотики", definition: "Препараты, которые подавляют рост или уничтожают микроорганизмы, вызывающие инфекции." }
+        ];
+        const shuffledTerms = [...terms].sort(() => Math.random() - 0.5);
+        
+        function allowDrop(event) { event.preventDefault(); }
+        function drag(event) { event.dataTransfer.setData("text", event.target.id); }
+        function drop(event) {
+            event.preventDefault();
+            let data = event.dataTransfer.getData("text");
+            event.target.appendChild(document.getElementById(data));
+        }
+        
+        function createGame() {
+            let wordsContainer = document.getElementById("words");
+            let definitionsContainer = document.getElementById("definitions");
+            
+            shuffledTerms.forEach((item, index) => {
+                let wordSpan = document.createElement("span");
+                wordSpan.innerText = item.term;
+                wordSpan.id = "word" + index;
+                wordSpan.classList.add("word");
+                wordSpan.draggable = true;
+                wordSpan.ondragstart = drag;
+                wordsContainer.appendChild(wordSpan);
+                
+                let dropZone = document.createElement("div");
+                dropZone.classList.add("dropzone");
+                dropZone.ondrop = drop;
+                dropZone.ondragover = allowDrop;
+                dropZone.dataset.correctTerm = item.term;
+                
+                let definitionSpan = document.createElement("span");
+                definitionSpan.innerText = item.definition;
+                definitionSpan.classList.add("definition");
+                
+                definitionsContainer.appendChild(definitionSpan);
+                definitionsContainer.appendChild(dropZone);
+            });
+        }
+        
+        function checkAnswers() {
+            let dropzones = document.querySelectorAll(".dropzone");
+            let allCorrect = true;
+            
+            dropzones.forEach(dropzone => {
+                let droppedWord = dropzone.children[0];
+                if (!droppedWord || droppedWord.innerText !== dropzone.dataset.correctTerm) {
+                    allCorrect = false;
+                }
+            });
+            
+            let resultText = document.getElementById("result");
+            let nextButton = document.getElementById("nextButton");
+            
+            if (allCorrect) {
+                resultText.innerText = "Верно!";
+                nextButton.style.display = "block";
+            } else {
+                resultText.innerText = "Неправильно. Попробуйте ещё раз.";
+            }
+        }
+        
+        function nextStep() {
+            alert("Следующий этап!");
+        }
+        
+        createGame();
+    </script>
+</body>
+</html>
